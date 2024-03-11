@@ -79,7 +79,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Si no hay valores, servir el archivo index.html
-		http.ServeFile(w, r, "index.html")
+		http.ServeFile(w, r, "static/index.html")
 	}
 }
 
