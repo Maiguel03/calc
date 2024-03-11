@@ -1,6 +1,6 @@
 module calculadora
 
-go 1.21.6
+go 1.23
 
 require (
 	github.com/howeyc/fsnotify v0.9.0 // indirect
