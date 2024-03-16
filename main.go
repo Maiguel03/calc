@@ -186,7 +186,7 @@ func calculadora(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Si no hay valores, servir el archivo index.html
 		Resultados := RecogerHistorial()
-		renderTemplate(w, "calculadora.html", Resultados)
+		renderTemplate(w, "index.html", Resultados)
 	}
 }
 
