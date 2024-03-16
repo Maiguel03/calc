@@ -3,7 +3,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>Calculadora avanzada</title>
+	<title>Calculadora</title>
 	<link rel="stylesheet" href="static/style.css">
 </head>
 <body>
@@ -36,16 +36,21 @@
 			<button id="seno" onclick="agregarOperador('!')">n!</button>
             <button id="cero" onclick="agregarNumero(0)">0</button>
             <button id="decimal" onclick="agregarDecimal()">.</button>
-            <button id="limpiar" onclick="limpiar(); limpiarsubpant()">C</button>
+            <button id="limpiar" onclick="limpiar(); limpiarsubpant(); limpiarHistorial()">C</button>
             
 			<button id="suma" onclick="agregarOperador('+')">+</button>
             
             <button id="potencia" onclick="agregarOperador('^')">^</button>
 			<button id="igual" onclick="calcular()">=</button>
             
-            
 		</div>
+
 	</div>
+		<div class="history">
+		{{range .}}
+		<p>{{.Fecha}} {{.Operacion}}</p>
+		{{end}}
+		</div>
 	<script>
 		// Obtener el elemento del resultado
 		var resultado = document.getElementById("resultado");
@@ -54,6 +59,7 @@
 		var operando1 = "";
 		var operando2 = "";
 		var operador = "";
+		var result = "";
 		var limpio = true;
 
 		// Función para agregar un número al resultado
@@ -61,13 +67,19 @@
 			// Si el resultado está limpio, reemplazarlo por el número
 			
 			if (limpio) {
+				if (operador != "!" && operador != "sqrt" ){
 				resultado.textContent = numero;
 				agregarSubpant(numero);
+				result += numero;
 				limpio = false;
+				}
 			} else {
 				// Si no, concatenar el número al resultado
+				if (operador != "!" && operador != "sqrt" ){
 				resultado.textContent += numero;
 				agregarSubpant(numero);
+				result += numero;
+				}
 			}
 			
 		}
@@ -77,9 +89,11 @@
             agregarSubpant(oper);
 			// Si hay un operando1 y un operador, calcular el resultado parcial
 			if (operando1 != "" && operador != "") {
+				result +=  " " + oper;
 				calcular();
 			}
 			// Guardar el resultado como operando1 y el operador como operador
+			result += oper ;
 			operando1 = resultado.textContent;
 			operador = oper;
 			// Limpiar el resultado para el siguiente operando
@@ -93,11 +107,13 @@
 				resultado.textContent = "0.";
 				agregarSubpant("0.");
 				limpio = false;
+				result += "0.";
 			} else {
 				// Si no, agregar el punto solo si no hay otro punto en el resultado
 				if (resultado.textContent.indexOf(".") == -1) {
 					resultado.textContent += ".";
 					agregarSubpant(".");
+					result += ".";
 				}
 			}
 		}
@@ -129,20 +145,71 @@
 				var xhr = new XMLHttpRequest();
                 // Codificar el operador antes de enviarlo
 		        var operadorCodificado = encodeURIComponent(operador);
-				xhr.open("GET", "/?operando1=" + operando1 + "&operando2=" + operando2 + "&operador=" + operadorCodificado, true);
+				xhr.open("GET", "/calculadora?operando1=" + operando1 + "&operando2=" + operando2 + "&operador=" + 
+				operadorCodificado, "&result=" + result, true);
 				// Enviar la petición
 				xhr.send();
 				// Cuando se reciba la respuesta, mostrarla en el resultado
 				xhr.onload = function() {
 					resultado.textContent = xhr.responseText;
 					subpant.textContent = xhr.responseText;
+					añadirHistorial(+ resultado.textContent);
+					
 				};
 				// Limpiar los operandos, el operador
+				
+				
 				operando1 = "";
 				operando2 = "";
-				operador = "";;
+				operador = "";
 			}
 		}
+
+		function limpiarHistorial(){
+			result = "";
+		}
+
+		function añadirHistorial(resultados) {
+			var timestamp = obtenerTimestampPostgreSQL();
+			var timestamp2 = new Date().toISOString();
+			result += "=" + resultados;
+			var resultadoCodificado = encodeURIComponent(result);
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "/calculadora?&timestamp="+timestamp+"&resultado="+resultadoCodificado, true);
+				// Enviar la petición
+			xhr.send();
+            const historyElement = document.querySelector('.history');
+            const operationText = `${timestamp} ${result} `;
+            const newOperation = document.createElement('p');
+            newOperation.textContent = operationText;
+            historyElement.appendChild(newOperation);
+			result = resultados;
+        }
+
+	// Obtener el timestamp en milisegundos desde la época Unix (1 de enero de 1970)
+	var timestamp = Date.now();
+
+	// Crear un objeto Date a partir del timestamp
+	var fecha = new Date(timestamp);
+
+	function obtenerTimestampPostgreSQL() {
+    // Crear un objeto Date con la fecha y hora actual
+    var fecha = new Date();
+
+    // Formatear la fecha y hora en el formato de timestamp de PostgreSQL
+    var fechaPostgres = fecha.getFullYear() + "-" +
+                        ("0" + (fecha.getMonth() + 1)).slice(-2) + "-" +
+                        ("0" + fecha.getDate()).slice(-2) + " " +
+                        ("0" + fecha.getHours()).slice(-2) + ":" +
+                        ("0" + fecha.getMinutes()).slice(-2) + ":" +
+                        ("0" + fecha.getSeconds()).slice(-2);
+
+    // Retornar la fecha formateada
+    return fechaPostgres;
+}
+
+
+
 	</script>
 </body>
 </html>
