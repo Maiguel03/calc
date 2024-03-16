@@ -59,6 +59,8 @@ func RecogerHistorial() []Historico {
 		fc := fechaCorregida.Format(formatoPersonalizado)
 		r.Fecha = fc
 		Resultados = append(Resultados, r)
+		fmt.Println(Resultados)
+
 	}
 	if err = rows.Err(); err != nil {
 		panic(err)
