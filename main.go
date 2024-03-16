@@ -188,7 +188,8 @@ func calculadora(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Si no hay valores, servir el archivo index.html
 		Login := Verficar{LoginFallido: true}
-		//Resultados := RecogerHistorial()
+		Resultados := RecogerHistorial()
+		fmt.PrintLn(Resultados)
 		renderTemplate(w, "index.html", Login)
 	}
 }
