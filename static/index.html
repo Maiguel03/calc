@@ -86,7 +86,8 @@
 
 		// Función para agregar un operador al resultado
 		function agregarOperador(oper) {
-            agregarSubpant(oper);
+			if (!limpio){
+            		agregarSubpant(oper);
 			// Si hay un operando1 y un operador, calcular el resultado parcial
 			if (operando1 != "" && operador != "") {
 				result +=  " " + oper;
@@ -98,6 +99,7 @@
 			operador = oper;
 			// Limpiar el resultado para el siguiente operando
 			limpiar();
+			}
 		}
 
 		// Función para agregar un punto decimal al resultado
