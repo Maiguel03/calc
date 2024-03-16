@@ -70,6 +70,7 @@
 			// Si el resultado está limpio, reemplazarlo por el número
 			
 			if (limpio) {
+
 				if (operador != "!" && operador != "sqrt" && operador != "log"){
 				resultado.textContent = numero;
 				agregarSubpant(numero);
@@ -88,20 +89,21 @@
 
 		// Función para agregar un operador al resultado
 		function agregarOperador(oper) {
-            if (result != ""){
+            if (result != "" && operador == ""){
 			// Si hay un operando1 y un operador, calcular el resultado parcial
-			if (operador != "") {
+			if (operador == "+" && operador == "-" && operador == "*" && operador == "/") {
 				result +=  " " + oper;
 				calcular();
 			}
-			// Guardar el resultado como operando1 y el operador como operador
+			// Guardar el resultado como operando1 y el operador como operador	
+			if (operador != "!" && operador != "sqrt" && operador != "log") {
 			agregarSubpant(oper);
 			result += oper ;
 			operando1 = resultado.textContent;
 			operador = oper;
 			// Limpiar el resultado para el siguiente operando
 			limpiar();
-			
+			}
 		}
 		}
 
@@ -158,7 +160,7 @@
 				xhr.onload = function() {
 					resultado.textContent = xhr.responseText;
 					subpant.textContent = xhr.responseText;
-					añadirHistorial(+ resultado.textContent);
+					añadirHistorial(resultado.textContent);
 					
 				};
 				// Limpiar los operandos, el operador
@@ -177,7 +179,7 @@
 		function añadirHistorial(resultados) {
 			var timestamp = obtenerTimestampPostgreSQL();
 			var timestamp2 = new Date().toISOString();
-			result += "=" + resultados;
+			result += "=" + resultados
 			var resultadoCodificado = encodeURIComponent(result);
 			var xhr = new XMLHttpRequest();
 			xhr.open("POST", "/calculadora?&timestamp="+timestamp+"&resultado="+resultadoCodificado, true);
@@ -189,6 +191,7 @@
             newOperation.textContent = operationText;
             historyElement.appendChild(newOperation);
 			result = resultados;
+			operando1 = result;
         }
 
 	// Obtener el timestamp en milisegundos desde la época Unix (1 de enero de 1970)
