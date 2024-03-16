@@ -55,19 +55,22 @@
 		// Obtener el elemento del resultado
 		var resultado = document.getElementById("resultado");
 
+		var subpantllena = false;
+
 		// Variables para almacenar los operandos, el operador y el estado de la calculadora
 		var operando1 = "";
 		var operando2 = "";
 		var operador = "";
 		var result = "";
 		var limpio = true;
+		var sinresult = false;
 
 		// Función para agregar un número al resultado
 		function agregarNumero(numero) {
 			// Si el resultado está limpio, reemplazarlo por el número
 			
 			if (limpio) {
-				if (operador != "!" && operador != "sqrt" ){
+				if (operador != "!" && operador != "sqrt" && operador != "log"){
 				resultado.textContent = numero;
 				agregarSubpant(numero);
 				result += numero;
@@ -75,31 +78,31 @@
 				}
 			} else {
 				// Si no, concatenar el número al resultado
-				if (operador != "!" && operador != "sqrt" ){
 				resultado.textContent += numero;
 				agregarSubpant(numero);
 				result += numero;
-				}
+				
 			}
 			
 		}
 
 		// Función para agregar un operador al resultado
 		function agregarOperador(oper) {
-			if (!limpio){
-            		agregarSubpant(oper);
+            if (result != "	"){
 			// Si hay un operando1 y un operador, calcular el resultado parcial
-			if (operando1 != "" && operador != "") {
+			if (operador != "") {
 				result +=  " " + oper;
 				calcular();
 			}
 			// Guardar el resultado como operando1 y el operador como operador
+			agregarSubpant(oper);
 			result += oper ;
 			operando1 = resultado.textContent;
 			operador = oper;
 			// Limpiar el resultado para el siguiente operando
 			limpiar();
-			}
+			
+		}
 		}
 
 		// Función para agregar un punto decimal al resultado
