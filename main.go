@@ -187,38 +187,17 @@ func calculadora(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Si no hay valores, servir el archivo index.html
-		Resultados := RecogerHistorial()
-		renderTemplate(w, "index.html", Resultados)
-	}
-}
-
-func Login(w http.ResponseWriter, r *http.Request) {
-	var logueado bool
-	if r.Method == "POST" {
-		usuario := r.FormValue("usuario")
-		contraseña := r.FormValue("contrasena")
-		fmt.Println(usuario, contraseña)
-
-		logueado = db.Loguear(usuario, contraseña)
-
-		if logueado {
-			http.Redirect(w, r, "/calculadora", http.StatusSeeOther)
-		}
-
 		Login := Verficar{LoginFallido: true}
+		//Resultados := RecogerHistorial()
 		renderTemplate(w, "index.html", Login)
-		return
-
 	}
-	renderTemplate(w, "index.html", nil)
 }
 
 func main() {
 	// Crear un servidor web en el puerto 8080
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
-	http.HandleFunc("/", Login)
-	http.HandleFunc("/calculadora", calculadora)
+	http.HandleFunc("/", calculadora)
 
 	http.ListenAndServe(":8080", nil)
 }
