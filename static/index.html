@@ -47,8 +47,8 @@
 
 	</div>
 		<div class="history">
-		{{range .}}
-		<p>{{.Fecha}} {{.Operacion}}</p>
+		{{if and .LoginFallido}}
+		<p>pinga</p>
 		{{end}}
 		</div>
 	<script>
