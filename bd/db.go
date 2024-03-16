@@ -9,7 +9,7 @@ import (
 )
 
 func ConnectDB() (*sql.DB, error) {
-	dbHost := "dpg-cnn7jl6n7f5s73da6f70-a.oregon-postgres.render.com/calc_t4wj"
+	dbHost := "dpg-cnn7jl6n7f5s73da6f70-a/calc_t4wj"
 	dbPort := "5432"
 	dbUser := "dek"
 	dbPassword := "rubqwjCMeRfKkwvGsGeYudqOpmKtbo34"
