@@ -18,7 +18,7 @@ func ConnectDB() (*sql.DB, error) {
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s sslmode=require",
 		dbHost, dbPort, dbUser, dbName, dbPassword)*/
 
-	db, err := sql.Open("postgres", postgres://dek:rubqwjCMeRfKkwvGsGeYudqOpmKtbo34@dpg-cnn7jl6n7f5s73da6f70-a/calc_t4wj)
+	db, err := sql.Open("postgres", "postgres://dek:rubqwjCMeRfKkwvGsGeYudqOpmKtbo34@dpg-cnn7jl6n7f5s73da6f70-a/calc_t4wj")
 	if err != nil {
 		return nil, err
 	}
