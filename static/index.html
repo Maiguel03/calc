@@ -46,11 +46,16 @@
 		</div>
 
 	</div>
+	
 		<div class="history">
-		{{range .}}
-		<p>{{.Fecha}} {{.Operacion}}</p>
-		{{end}}
+		  {{range .}}
+		  <p>{{.Fecha}} {{.Operacion}}</p>
+		  {{end}}
 		</div>
+		<div class="botonrep">
+		  <a href="/descargar" class="descargar-reporte">Descargar Reporte</a>
+		</div>
+
 	<script>
 		// Obtener el elemento del resultado
 		var resultado = document.getElementById("resultado");
