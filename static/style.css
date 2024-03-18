@@ -10,6 +10,35 @@ body{
 	font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
+.botonrep{
+	position: relative;
+	width: 20%;
+	height: 30%;
+}
+
+.descargar-reporte {
+	display: block; /* Hacer que el botón sea un bloque para ocupar su propia línea */
+	margin: 0 auto; /* Centrar el botón horizontalmente */
+	padding: 10px; /* Espaciado interno para el botón */
+	border: none; /* Eliminar el borde predeterminado */
+	border-radius: 5px; /* Bordes redondeados para el botón */
+	background-color: #4CAF50; /* Color de fondo para el botón */
+	color: white; /* Color del texto para el botón */
+	text-align: center; /* Alinear el texto del botón al centro */
+	text-decoration: none; /* Eliminar la decoración del texto */
+	font-size: 16px; /* Tamaño del texto del botón */
+	cursor: pointer; /* Cambiar el cursor a tipo puntero */
+	transition: background-color 0.3s ease;
+    display: block;
+    left: 15.5%;
+    top: 52%;
+    position: fixed;
+    margin-top: 10px;
+  }
+  
+  .descargar-reporte:hover {
+	background-color: #45a049; /* Cambiar el color de fondo al pasar el mouse */
+  }
 
 .history {
 	width: 20%; /* Ancho de la ventana del historial */
