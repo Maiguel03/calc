@@ -4,6 +4,7 @@ go 1.22.1
 
 require (
 	github.com/howeyc/fsnotify v0.9.0 // indirect
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
