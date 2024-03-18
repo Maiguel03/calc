@@ -3,70 +3,14 @@ package main
 
 import (
 	db "calc/bd"
+	"calc/pdf"
 	"fmt"
 	"html/template"
 	"math"
 	"net/http"
 	"strconv"
-
-	//"strconv"
 	"time"
 )
-
-type Verficar struct {
-	LoginFallido bool
-}
-
-type Historico struct {
-	Fecha     string
-	Operacion string
-}
-
-func RecogerHistorial() []Historico {
-	db, err := db.ConnectDB()
-
-	if err != nil {
-		panic(err)
-	}
-
-	rows, err := db.Query("SELECT * FROM historico")
-
-	defer rows.Close()
-
-	var Resultados []Historico
-	var r Historico
-
-	for rows.Next() {
-		err := rows.Scan(&r.Operacion, &r.Fecha)
-		if err != nil {
-			panic(err)
-		}
-
-		fecha := r.Fecha
-
-		f, err := time.Parse(time.RFC3339, fecha)
-		if err != nil {
-			panic(err)
-		}
-
-		//Obtenemos la zona horaria local
-		zonaHoraria, err := time.LoadLocation("America/New_York")
-		if err != nil {
-			panic(err)
-		}
-		fechaCorregida := f.In(zonaHoraria)
-		formatoPersonalizado := "2006-01-02 15:04:05"
-		fc := fechaCorregida.Format(formatoPersonalizado)
-		r.Fecha = fc
-		Resultados = append(Resultados, r)
-		fmt.Println(Resultados)
-
-	}
-	if err = rows.Err(); err != nil {
-		panic(err)
-	}
-	return Resultados
-}
 
 var templates = template.Must(template.New("T").ParseGlob("static/*.html"))
 
@@ -77,36 +21,9 @@ func renderTemplate(rw http.ResponseWriter, name string, data interface{}) {
 	}
 }
 
-// Funcion para recoger historial de operaciones
-
-func llenarHistorial(resultado string, fecha string) error {
-	fmt.Println("LLenar Historial: ", resultado, fecha)
-	db, err := db.ConnectDB()
-
-	if err != nil {
-		panic(err)
-	}
-
-	stmt, err := db.Prepare("INSERT INTO historico (operacion, fecha) VALUES ($1, $2)")
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	// Ejecuta la sentencia con los valores deseados
-	_, err = stmt.Exec(resultado, fecha)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Registro insertado correctamente")
-	return nil
-}
-
 // Función para calcular el resultado de una operación
 func calcular(operando1, operando2 float64, operador string) float64 {
 	var resultado float64
-	fmt.Println(operador)
 	switch operador {
 	case "+":
 		resultado = operando1 + operando2
@@ -122,7 +39,6 @@ func calcular(operando1, operando2 float64, operador string) float64 {
 		resultado = math.Round(resultado*100000000) / 100000000
 
 	case "sqrt":
-		fmt.Println(operando1, operador)
 		resultado = math.Sqrt(operando1)
 		resultado = math.Round(resultado*100000000) / 100000000
 
@@ -131,14 +47,10 @@ func calcular(operando1, operando2 float64, operador string) float64 {
 		var numero int64
 		numero = int64(operando1)
 		factorial = 1
-		fmt.Println(operador, operando1, numero)
 		for i := int64(1); i <= numero; i++ {
 			factorial *= i
-			fmt.Println(factorial)
 		}
-
 		resultado = float64(factorial)
-		fmt.Println(resultado)
 		resultado = math.Round(resultado*100000000) / 100000000
 
 	case "log":
@@ -161,19 +73,15 @@ func calculadora(w http.ResponseWriter, r *http.Request) {
 	operador := r.URL.Query().Get("operador")
 	timestamp := r.URL.Query().Get("timestamp")
 	result := r.URL.Query().Get("resultado")
-	fmt.Println("timestamp:", timestamp, "resultado:", result)
-	//result := resultado
-	fmt.Println(timestamp, result)
+
 	// Si hay valores, convertirlos a números y calcular el resultado
 	if result != "" && timestamp != "" {
-		err := llenarHistorial(result, timestamp)
+		err := db.LlenarHistorial(result, timestamp)
 		if err != nil {
 			panic(err)
 		}
 	}
 	if operando1 != "" && operando2 != "" && operador != "" {
-
-		fmt.Println(timestamp, result)
 
 		num1, err1 := strconv.ParseFloat(operando1, 64)
 		num2, err2 := strconv.ParseFloat(operando2, 64)
@@ -187,11 +95,44 @@ func calculadora(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Si no hay valores, servir el archivo index.html
-		//Login := Verficar{LoginFallido: true}
-		Resultados := RecogerHistorial()
+		Resultados := db.RecogerHistorial()
 		fmt.Println(Resultados)
 		renderTemplate(w, "index.html", Resultados)
 	}
+}
+
+func Descargar(w http.ResponseWriter, r *http.Request) {
+
+	//Recoger registros de la base de datos
+
+	Registro := db.RecogerHistorial()
+	// Generar el PDF y guardar el contenido en un buffer
+	pdfContent, err := pdf.CrearReportePDF(Registro)
+	if err != nil {
+		http.Error(w, "Error al generar el PDF", http.StatusInternalServerError)
+		return
+	}
+
+	loc, _ := time.LoadLocation("America/New_York")
+	fechaNY := time.Now().In(loc)
+
+	// Formatear la fecha y hora al formato deseado
+	fechaFormato := fechaNY.Format("02-01-2006 15:04:05")
+
+	// Crear el nombre del archivo con la fecha y hora actual
+	nombreArchivo := fmt.Sprintf("Registro_Operaciones_%s.pdf", fechaFormato)
+
+	// Configurar encabezados para la descarga
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", nombreArchivo))
+	w.Header().Set("Content-Type", "application/pdf")
+
+	// Escribir el contenido del PDF en la respuesta
+	_, err = w.Write(pdfContent.Bytes())
+	if err != nil {
+		http.Error(w, "Error al escribir el PDF en la respuesta", http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func main() {
@@ -199,6 +140,7 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/", calculadora)
+	http.HandleFunc("/descargar", Descargar)
 
 	http.ListenAndServe(":8080", nil)
 }
