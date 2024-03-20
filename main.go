@@ -68,6 +68,25 @@ func calcular(operando1, operando2 float64, operador string) float64 {
 // Función para manejar las peticiones del cliente
 func calculadora(w http.ResponseWriter, r *http.Request) {
 	// Obtener los valores de los parámetros de la URL
+
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		return
+	}
+
+	if r.Method == "POST" {
+		ValorFecha := r.FormValue("ordenar-fecha")
+		fmt.Println(ValorFecha)
+
+		if ValorFecha != "todos"{
+		Mapa := make(map[string]interface{})
+		Mapa["Resultados"] = db.RecogerHistorialPorFecha(ValorFecha)
+		Mapa["Fechas"] = db.RecogerFechas()
+		renderTemplate(w, "index.html", Mapa)
+		return
+		}
+	}
+	
 	operando1 := r.URL.Query().Get("operando1")
 	operando2 := r.URL.Query().Get("operando2")
 	operador := r.URL.Query().Get("operador")
@@ -95,9 +114,13 @@ func calculadora(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Si no hay valores, servir el archivo index.html
-		Resultados := db.RecogerHistorial()
-		fmt.Println(Resultados)
-		renderTemplate(w, "index.html", Resultados)
+		Fechas := db.RecogerFechas()
+		Resultados := db.RecogerHistorialCompleto()
+		Mapa := make(map[string]interface{})
+		Mapa["Resultados"] = Resultados
+		Mapa["Fechas"] = Fechas
+		renderTemplate(w, "index.html", Mapa)
+		return
 	}
 }
 
@@ -105,7 +128,7 @@ func Descargar(w http.ResponseWriter, r *http.Request) {
 
 	//Recoger registros de la base de datos
 
-	Registro := db.RecogerHistorial()
+	Registro := db.RecogerHistorialCompleto()
 	// Generar el PDF y guardar el contenido en un buffer
 	pdfContent, err := pdf.CrearReportePDF(Registro)
 	if err != nil {
