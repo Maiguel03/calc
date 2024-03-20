@@ -46,14 +46,23 @@
 		</div>
 
 	</div>
-	
+		<form action="/" class="fecha" method="POST">
+			<label for="ordenar-fecha" style="text-align: center;">Ordenar por fecha</label>
+			<select name="ordenar-fecha" id="ordenar-fecha">
+			<option value="todos">Todas la fechas</option>
+			{{range .Fechas}}
+			<option value={{.}}>{{.}}</option>
+			{{end}}
+			</select>
+			<input type="submit" value="Actualizar" class="actualizar-registros">
+		</form>
 		<div class="history">
-		  {{range .}}
+		  {{range .Resultados}}
 		  <p>{{.Fecha}} {{.Operacion}}</p>
 		  {{end}}
 		</div>
-		<div id="botonrep">
-		  <a href="/descargar" id="descargar-reporte">Descargar Reporte</a>
+		<div class="botonrep">
+		  <a href="/descargar" class="descargar-reporte">Descargar Reporte PDF</a>
 		</div>
 
 	<script>
