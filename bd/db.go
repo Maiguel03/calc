@@ -1,12 +1,12 @@
 package db
 
 import (
+	"calc/modelo"
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 	"log"
 	"time"
-	"calc/modelo"
-	_ "github.com/lib/pq"
 )
 
 func connectDB() (*sql.DB, error) {
@@ -62,7 +62,7 @@ func Loguear(usuario string, contraseña string) bool {
 }
 
 // Funcion para recoger historial de operaciones
-func RecogerHistorial() []modelo.Historico {
+func RecogerHistorialCompleto() []modelo.Historico {
 	db, err := connectDB()
 
 	if err != nil {
@@ -77,29 +77,18 @@ func RecogerHistorial() []modelo.Historico {
 	var r modelo.Historico
 
 	for rows.Next() {
-		err := rows.Scan(&r.Operacion, &r.Fecha)
+		var ts time.Time 
+		err := rows.Scan(&r.Operacion, &ts)
 		if err != nil {
 			panic(err)
 		}
 
-		fecha := r.Fecha
-
-		f, err := time.Parse(time.RFC3339, fecha)
-		if err != nil {
+		if err != nil{
 			panic(err)
 		}
-
-		//Obtenemos la zona horaria local
-		zonaHoraria, err := time.LoadLocation("America/New_York")
-		if err != nil {
-			panic(err)
-		}
-		fechaCorregida := f.In(zonaHoraria)
-		formatoPersonalizado := "2006-01-02 15:04:05"
-		fc := fechaCorregida.Format(formatoPersonalizado)
-		r.Fecha = fc
+		fecha := ts.Format("2006-01-02 15:04:05")
+		r.Fecha = fecha
 		Resultados = append(Resultados, r)
-		fmt.Println(Resultados)
 
 	}
 	if err = rows.Err(); err != nil {
@@ -107,9 +96,9 @@ func RecogerHistorial() []modelo.Historico {
 	}
 	return Resultados
 }
-//Funcion para enviar un registro al historial de operaciones
+
+// Funcion para enviar un registro al historial de operaciones
 func LlenarHistorial(resultado string, fecha string) error {
-	fmt.Println("LLenar Historial: ", resultado, fecha)
 	db, err := connectDB()
 
 	if err != nil {
@@ -130,4 +119,75 @@ func LlenarHistorial(resultado string, fecha string) error {
 
 	fmt.Println("Registro insertado correctamente")
 	return nil
+}
+
+func RecogerFechas() []string{
+	db , err := connectDB()
+
+	if err != nil{
+		panic(err)
+	}
+
+	defer db.Close()
+
+	var	Fechas []string
+	var fecha string
+	rows, err := db.Query("select distinct fecha::date from historico ")
+
+	if err != nil{
+		panic(err)
+	}
+	
+	for rows.Next(){
+		var ts time.Time 
+		err := rows.Scan(&ts)
+
+		if err != nil{
+			panic(err)
+		}
+		fecha = ts.Format("2006-01-02") // Usa el formato YYYY-MM-DD
+	
+
+		Fechas = append(Fechas, fecha)
+	}
+	return Fechas
+}
+
+func RecogerHistorialPorFecha(Fecha string) []modelo.Historico {
+	db, err := connectDB()
+
+	if err != nil {
+		panic(err)
+	}
+
+	rows, err := db.Query("SELECT * FROM historico WHERE Fecha >= $1 AND Fecha < $2", Fecha+" 00:00:00", Fecha+" 23:59:59")
+
+	if err != nil{
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	var Resultados []modelo.Historico
+	var r modelo.Historico
+
+	for rows.Next() {
+		var ts time.Time 
+		err := rows.Scan(&r.Operacion, &ts)
+		if err != nil {
+			panic(err)
+		}
+
+		if err != nil{
+			panic(err)
+		}
+		fecha := ts.Format("2006-01-02 15:04:05")
+		r.Fecha = fecha
+		Resultados = append(Resultados, r)
+
+	}
+	if err = rows.Err(); err != nil {
+		panic(err)
+	}
+	return Resultados
 }
